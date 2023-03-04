@@ -3,6 +3,7 @@ package controllers
 import (
 	"atm-system/configs"
 	"atm-system/models"
+	"atm-system/responses"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -26,7 +27,7 @@ func hashPassword(pin string) string {
 // creating an account
 
 func CreateAccount(c *gin.Context) {
-	var req models.CreateAccountRequest
+	var req responses.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -61,13 +62,13 @@ func CreateAccount(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "account created successfully"})
+	c.JSON(http.StatusOK, gin.H{"Account created successfully. Account number": accountNumber})
 }
 
 // depositing money
 
 func Deposit(c *gin.Context) {
-	var req models.DepositRequest
+	var req responses.DepositRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -110,7 +111,7 @@ func Deposit(c *gin.Context) {
 // withdraw money
 
 func Withdraw(c *gin.Context) {
-	var req models.WithdrawRequest
+	var req responses.WithdrawRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -160,7 +161,7 @@ func Withdraw(c *gin.Context) {
 // transfer money from one account to another
 
 func Transfer(c *gin.Context) {
-	var req models.TransferRequest
+	var req responses.TransferRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -239,7 +240,7 @@ func Transfer(c *gin.Context) {
 // changing pin
 
 func SetPin(c *gin.Context) {
-	var req models.PinRequest
+	var req responses.PinRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
