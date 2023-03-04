@@ -2,7 +2,11 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -15,6 +19,7 @@ import (
 
 type Account struct {
 	AccountNumber string  `bson:"account_number" json:"account_number"`
+	Name          string  `bson:"name" json:"name"`
 	Pin           string  `bson:"pin" json:"-"`
 	Balance       float64 `bson:"balance" json:"balance"`
 }
@@ -28,6 +33,11 @@ type Transaction struct {
 }
 
 var client *mongo.Client
+
+func hashPassword(pin string) string {
+	hash := sha256.Sum256([]byte(pin))
+	return hex.EncodeToString(hash[:])
+}
 
 func main() {
 	// Connect to MongoDB
@@ -50,8 +60,8 @@ func main() {
 
 	// Create an account
 	type CreateAccountRequest struct {
-		AccountNumber string `json:"account_number" binding:"required"`
-		Pin           string `json:"pin" binding:"required"`
+		Name string `json:"name" binding:"required"`
+		Pin  string `json:"pin" binding:"required"`
 	}
 	r.POST("/create", func(c *gin.Context) {
 		var req CreateAccountRequest
@@ -60,19 +70,27 @@ func main() {
 			return
 		}
 
+		accountNumber := fmt.Sprintf("%06d", rand.Intn(1000000))
+
 		// Check if account exists
-		filter := bson.M{"account_number": req.AccountNumber}
-		var existingAccount Account
-		err := client.Database("atm").Collection("accounts").FindOne(context.Background(), filter).Decode(&existingAccount)
-		if err == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "account already exists"})
+		// filter := bson.M{"account_number": accountNumber}
+		// var existingAccount Account
+		// err := client.Database("atm").Collection("accounts").FindOne(context.Background(), filter).Decode(&existingAccount)
+		// if err == nil {
+		// 	c.JSON(http.StatusBadRequest, gin.H{"error": "account already exists"})
+		// 	return
+		// }
+
+		if len(req.Pin) != 4 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "pin must be 4 digits"})
 			return
 		}
 
 		// Insert new account
 		newAccount := Account{
-			AccountNumber: req.AccountNumber,
-			Pin:           req.Pin,
+			Name:          req.Name,
+			AccountNumber: accountNumber,
+			Pin:           hashPassword(req.Pin),
 			Balance:       0,
 		}
 		_, err = client.Database("atm").Collection("accounts").InsertOne(context.Background(), newAccount)
@@ -98,7 +116,7 @@ func main() {
 		}
 
 		// Check if account exists and PIN matches
-		filter := bson.M{"account_number": req.AccountNumber, "pin": req.Pin}
+		filter := bson.M{"account_number": req.AccountNumber, "pin": hashPassword(req.Pin)}
 		var existingAccount Account
 		err := client.Database("atm").Collection("accounts").FindOne(context.Background(), filter).Decode(&existingAccount)
 		if err != nil {
@@ -145,7 +163,7 @@ func main() {
 		}
 
 		//check if account exists and pin match
-		filter := bson.M{"account_number": req.AccountNumber, "pin": req.Pin}
+		filter := bson.M{"account_number": req.AccountNumber, "pin": hashPassword(req.Pin)}
 		var existingAccount Account
 		err := client.Database("atm").Collection("accounts").FindOne(context.Background(), filter).Decode(&existingAccount)
 		if err != nil {
@@ -200,7 +218,7 @@ func main() {
 		}
 
 		// Check if 'from' account exists and PIN matches
-		filterFrom := bson.M{"account_number": req.FromAccount, "pin": req.FromPin}
+		filterFrom := bson.M{"account_number": req.FromAccount, "pin": hashPassword(req.FromPin)}
 		var fromAccount Account
 		err := client.Database("atm").Collection("accounts").FindOne(context.Background(), filterFrom).Decode(&fromAccount)
 		if err != nil {
@@ -283,7 +301,7 @@ func main() {
 		}
 
 		// Check if account exists and old PIN matches
-		filter := bson.M{"account_number": req.AccountNumber, "pin": req.OldPin}
+		filter := bson.M{"account_number": req.AccountNumber, "pin": hashPassword(req.OldPin)}
 		var account Account
 		err := client.Database("atm").Collection("accounts").FindOne(context.Background(), filter).Decode(&account)
 		if err != nil {
@@ -292,7 +310,7 @@ func main() {
 		}
 
 		// Update PIN
-		update := bson.M{"$set": bson.M{"pin": req.NewPin}}
+		update := bson.M{"$set": bson.M{"pin": hashPassword(req.NewPin)}}
 		_, err = client.Database("atm").Collection("accounts").UpdateOne(context.Background(), filter, update)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update PIN"})
@@ -323,7 +341,7 @@ func main() {
 		}
 
 		// Validate PIN
-		if account.Pin != req.Pin {
+		if account.Pin != hashPassword(req.Pin) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid PIN"})
 			return
 		}
