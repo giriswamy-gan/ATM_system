@@ -1,22 +1,5 @@
 package models
 
-// import (
-// 	"context"
-// 	"crypto/sha256"
-// 	"encoding/hex"
-// 	"fmt"
-// 	"log"
-// 	"math/rand"
-// 	"net/http"
-// 	"time"
-
-// 	"github.com/gin-gonic/gin"
-// 	"go.mongodb.org/mongo-driver/bson"
-// 	"go.mongodb.org/mongo-driver/mongo"
-// 	"go.mongodb.org/mongo-driver/mongo/options"
-// 	"go.mongodb.org/mongo-driver/mongo/readpref"
-// )
-
 type Account struct {
 	AccountNumber string  `bson:"account_number" json:"account_number"`
 	Name          string  `bson:"name" json:"name"`

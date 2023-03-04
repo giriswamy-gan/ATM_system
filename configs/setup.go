@@ -2,20 +2,13 @@ package configs
 
 import (
 	"context"
-	// "crypto/sha256"
-	// "encoding/hex"
 	"fmt"
 	"log"
 
-	// "math/rand"
-	// "net/http"
 	"time"
 
-	// "github.com/gin-gonic/gin"
-	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	// "go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 func ConnectDB() *mongo.Client {
