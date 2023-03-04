@@ -14,12 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	// "go.mongodb.org/mongo-driver/mongo"
-	// "go.mongodb.org/mongo-driver/mongo/options"
-	// "go.mongodb.org/mongo-driver/mongo/readpref"
 )
-
-//"/create"
 
 var client = configs.DB
 
@@ -27,6 +22,8 @@ func hashPassword(pin string) string {
 	hash := sha256.Sum256([]byte(pin))
 	return hex.EncodeToString(hash[:])
 }
+
+// creating an account
 
 func CreateAccount(c *gin.Context) {
 	var req models.CreateAccountRequest
@@ -67,7 +64,7 @@ func CreateAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "account created successfully"})
 }
 
-//"/deposit"
+// depositing money
 
 func Deposit(c *gin.Context) {
 	var req models.DepositRequest
@@ -110,7 +107,7 @@ func Deposit(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "money deposited successfully"})
 }
 
-//"/withdraw"
+// withdraw money
 
 func Withdraw(c *gin.Context) {
 	var req models.WithdrawRequest
@@ -160,7 +157,7 @@ func Withdraw(c *gin.Context) {
 
 }
 
-//"/transfer"
+// transfer money from one account to another
 
 func Transfer(c *gin.Context) {
 	var req models.TransferRequest
@@ -239,7 +236,7 @@ func Transfer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "money transferred successfully"})
 }
 
-//"/setpin"
+// changing pin
 
 func SetPin(c *gin.Context) {
 	var req models.PinRequest
@@ -268,7 +265,7 @@ func SetPin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "PIN updated successfully"})
 }
 
-//"bankstatement"
+// show entire transaction history of an account
 
 func BankStatement(c *gin.Context) {
 	var req struct {
