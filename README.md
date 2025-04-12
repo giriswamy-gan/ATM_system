@@ -1,6 +1,6 @@
 ATM System
 
-Using GoLang and Gin as framework. MongoDB as database.
+Using Golang and Gin as framework. MongoDB as database.
 
 A basic ATM system that provides a seamless and secure experience for customers.
 
